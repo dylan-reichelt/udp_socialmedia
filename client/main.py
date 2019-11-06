@@ -14,6 +14,7 @@ def sendLoop():
         global Token
         action, data = message.split("#")
         global canSend
+
         if action and canSend:
             if action == "login":
                 sendData = b'D|R|02|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
@@ -27,12 +28,17 @@ def sendLoop():
                 sendData = b'D|R|08|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 send = client.send(sendData)
                 canSend = False
+            elif action == "post":
+                sendData = b'D|R|11|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
+                send = client.send(sendData)
+                canSend = False
             else:
                 print("ERROR: Not a recognized action")
 
 def listenLoop():
     global canSend
     global Token 
+
     while True:
         tempData, server = client.listen()
         data = tempData.decode("ascii")
@@ -59,6 +65,10 @@ def listenLoop():
             print("unsubscribe_ack#successful")
         elif opcode == "10":
             print("unsubscribe_ack#failed")
+        elif opcode == "12":
+            print("post_ack#successful")
+        elif opcode == "13":
+            print(str(payload))
         else:
             print("ERROR: unrecognized opcode")
 

@@ -13,6 +13,7 @@ class Server:
                     "max" : "gamer"}
         
         self.tokenDict = {}
+        self.messageList = []
 
         # Creates a UDP Socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -79,7 +80,25 @@ class Server:
             else:
                 sendData = b'D|R|10|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
             
-            print(tempUser.subs)
+        else:
+            sendData = b'D|R|01|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+            
+        return sendData
+    
+    def post(self, payload, token):
+        sendData = b'D|R|0|0|0|0'
+        if self.checkLogin(token):
+            userData = self.tokenDict[token]
+            payloadFinal = "<" + userData.User + ">" + payload
+            self.messageList.insert(0, payloadFinal)
+
+            for tempUser in self.tokenDict.values():
+                if userData.User in tempUser.subs:
+                    forwardData = b'D|R|13|' + str(tempUser.Token).encode("ascii", "backslashreplace") + b'|0|' + str(payloadFinal).encode("ascii", "backslashreplace")
+                    self.send(forwardData, tempUser.address)
+            
+            sendData = b'D|R|12|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+        
         else:
             sendData = b'D|R|01|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
             
@@ -90,3 +109,12 @@ class Server:
     
     def checkLogin(self, token):
         return token in self.tokenDict.keys()
+    
+    def getUser(self, user):
+        returnUser = None
+        for tempUser in self.tokenDict.values():
+            if tempUser.User == user:
+                returnUser = tempUser
+                break
+        
+        return returnUser

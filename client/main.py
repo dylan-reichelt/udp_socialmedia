@@ -12,13 +12,16 @@ def sendLoop():
         # Send data
         message = input()
         global Token
-        print(Token)
         action, data = message.split("#")
         global canSend
         if action and canSend:
             if action == "login":
-                sendData = b'D|R|02|0|0|' + str(data).encode("ascii", "backslashreplace")
+                sendData = b'D|R|02|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 sent = client.send(sendData)
+                canSend = False
+            elif action =="subscribe":
+                sendData = b'D|R|05|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
+                send = client.send(sendData)
                 canSend = False
             else:
                 print("ERROR: Not a recognized command")
@@ -42,8 +45,10 @@ def listenLoop():
             Token = tempToken
         elif opcode == "04":
             print("login_ack#failed")
+        elif opcode == "01":
+            print("ERROR: Must login first before you can perform this action!")
         else:
-            print("ERROR: unable to read opcode")
+            print("ERROR: unrecognized opcode")
 
         canSend = True
 

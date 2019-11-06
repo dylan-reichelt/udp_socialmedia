@@ -16,11 +16,14 @@ def main():
             Token = dataSplit[3]
             messageID = dataSplit[4]
             payload = dataSplit[5]
-
+            
             if opcode == "02":
                 user, password = payload.split("&")
                 ack = udpServer.logon(user, password, address)
                 sent = udpServer.send(ack, address)
+            elif opcode == "05":
+                ack = udpServer.subscribe(payload, Token)
+                send = udpServer.send(ack, address)
 
 if __name__ == "__main__":
     main()

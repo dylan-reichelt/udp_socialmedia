@@ -45,25 +45,29 @@ class Server:
             tempUser = User()
             tempUser.User = name
             tempUser.Online = True
-            tempUser.Token = token
+            tempUser.Token = str(token)
             tempUser.address = address
             tempUser.lastActive = datetime.datetime.now()
 
-            self.tokenList.append(token)
+            self.tokenList.append(str(token))
             self.onlineUsers.append(tempUser)
-            returnMe = sendData = b'D|R|03|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
-            return returnMe
+            sendData = b'D|R|03|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+            return sendData
         else:
-            returnMe = b'D|R|04|0|0|0'
-            return returnMe
+            sendData = b'D|R|04|0|0|0'
+            return sendData
+        
+    def subscribe(self, user, token):
+        sendData = b'D|R|0|0|0|0'
+        if self.checkLogin(token):
+            print("DO SOMETHING")
+        else:
+            sendData = b'D|R|01|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+            
+        return sendData
     
     def createtoken(self):
         return random.getrandbits(32)
     
     def checkLogin(self, token):
-        logged = False
-        
-        if token in self.tokenList:
-            logged = True
-
-        return logged
+        return token in self.tokenList

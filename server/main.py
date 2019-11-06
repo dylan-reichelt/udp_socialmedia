@@ -12,8 +12,8 @@ def main():
 
             if action == "login":
                 user, password = info.split("&")
-                udpServer.logon(user, password, address)
-                sent = udpServer.send(b'LOGIN SUCCESSFUL', address)
+                ack = udpServer.logon(user, password, address)
+                sent = udpServer.send(ack, address)
             else:
                 sent = udpServer.send(b'ERROR: not a recognized command', address)
 

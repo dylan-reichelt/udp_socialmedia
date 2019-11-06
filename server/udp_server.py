@@ -12,8 +12,7 @@ class Server:
                     "alex" : "loser",
                     "max" : "gamer"}
         
-        self.onlineUsers = []
-        self.tokenList = []
+        self.tokenDict = {}
 
         # Creates a UDP Socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -38,7 +37,7 @@ class Server:
             token = 0
             while True:
                 token = self.createtoken()
-                if token not in self.tokenList:
+                if token not in self.tokenDict.keys():
                     break
             
 
@@ -48,9 +47,8 @@ class Server:
             tempUser.Token = str(token)
             tempUser.address = address
             tempUser.lastActive = datetime.datetime.now()
-
-            self.tokenList.append(str(token))
-            self.onlineUsers.append(tempUser)
+            
+            self.tokenDict.update({str(token): tempUser})
             sendData = b'D|R|03|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
             return sendData
         else:
@@ -60,7 +58,12 @@ class Server:
     def subscribe(self, user, token):
         sendData = b'D|R|0|0|0|0'
         if self.checkLogin(token):
-            print("DO SOMETHING")
+            if user in self.userDict.keys():
+                tempUser = self.tokenDict[token]
+                tempUser.subs.append(user)
+                sendData = b'D|R|06|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+            else:
+                sendData = b'D|R|07|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
         else:
             sendData = b'D|R|01|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
             
@@ -70,4 +73,4 @@ class Server:
         return random.getrandbits(32)
     
     def checkLogin(self, token):
-        return token in self.tokenList
+        return token in self.tokenDict.keys()

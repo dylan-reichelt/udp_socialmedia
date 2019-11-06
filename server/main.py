@@ -11,7 +11,7 @@ def main():
             dataSplit = data.decode("utf-8").split("|")
 
             firstInitial = dataSplit[0]
-            secondInitial = dataSplit[0]
+            secondInitial = dataSplit[1]
             opcode = dataSplit[2]
             Token = dataSplit[3]
             messageID = dataSplit[4]

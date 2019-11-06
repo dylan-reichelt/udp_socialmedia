@@ -24,7 +24,7 @@ def sendLoop():
                 send = client.send(sendData)
                 canSend = False
             else:
-                print("ERROR: Not a recognized command")
+                print("ERROR: Not a recognized action")
 
 def listenLoop():
     global canSend
@@ -34,7 +34,7 @@ def listenLoop():
         data = tempData.decode("ascii")
         dataSplit = data.split("|")
         firstInitial = dataSplit[0]
-        secondInitial = dataSplit[0]
+        secondInitial = dataSplit[1]
         opcode = dataSplit[2]
         tempToken = dataSplit[3]
         messageID = dataSplit[4]
@@ -46,7 +46,11 @@ def listenLoop():
         elif opcode == "04":
             print("login_ack#failed")
         elif opcode == "01":
-            print("ERROR: Must login first before you can perform this action!")
+            print("ERROR: login to perform this action!")
+        elif opcode == "06":
+            print("subscribe_ack#successful")
+        elif opcode == "07":
+            print("subscribe_ack#failed")
         else:
             print("ERROR: unrecognized opcode")
 

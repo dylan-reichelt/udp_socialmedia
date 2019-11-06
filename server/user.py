@@ -4,6 +4,5 @@ class User:
         self.Online = False
         self.Token = None
         self.lastActive = None
-        self.ip = None
-        self.port = None
+        self.address = None
         self.subs = []

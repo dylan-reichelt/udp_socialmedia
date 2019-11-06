@@ -1,6 +1,10 @@
 import socket
 import sys
+import random
+import datetime
+
 from user import User
+
 
 class Server:
     def __init__(self):
@@ -9,6 +13,7 @@ class Server:
                     "max" : "gamer"}
         
         self.onlineUsers = []
+        self.tokenList = []
 
         # Creates a UDP Socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -26,10 +31,33 @@ class Server:
         return self.sock.sendto(data, address)
     
     def logon(self, name, password, address):
+
+        #logon successful name and password match
         if name in self.userDict.keys() and self.userDict[name] == password:
+            
+            token = 0
+            while True:
+                token = self.createtoken()
+                if token not in self.tokenList:
+                    break
+            
+
+            tempUser = User()
+            tempUser.User = name
+            tempUser.Online = True
+            tempUser.Token = token
+            tempUser.address = address
+            tempUser.lastActive = datetime.datetime.now()
+
+            self.tokenList.append(token)
+            self.onlineUsers.append(tempUser)
             return True
         else:
             return False
+    
+    def createtoken(self):
+        return random.getrandbits(32)
+
 
 """
 while True:

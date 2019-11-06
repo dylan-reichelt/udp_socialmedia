@@ -24,6 +24,9 @@ def main():
             elif opcode == "05":
                 ack = udpServer.subscribe(payload, Token)
                 send = udpServer.send(ack, address)
+            elif opcode == "08":
+                ack = udpServer.unsubscribe(payload, Token)
+                send = udpServer.send(ack, address)
 
 if __name__ == "__main__":
     main()

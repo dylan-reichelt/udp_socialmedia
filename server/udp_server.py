@@ -69,6 +69,22 @@ class Server:
             
         return sendData
     
+    def unsubscribe(self, user, token):
+        sendData = b'D|R|0|0|0|0'
+        if self.checkLogin(token):
+            tempUser = self.tokenDict[token]
+            if user in tempUser.subs:
+                tempUser.subs.remove(user)
+                sendData = b'D|R|09|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+            else:
+                sendData = b'D|R|10|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+            
+            print(tempUser.subs)
+        else:
+            sendData = b'D|R|01|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+            
+        return sendData
+    
     def createtoken(self):
         return random.getrandbits(32)
     

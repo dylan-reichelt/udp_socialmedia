@@ -19,8 +19,12 @@ def sendLoop():
                 sendData = b'D|R|02|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 sent = client.send(sendData)
                 canSend = False
-            elif action =="subscribe":
+            elif action == "subscribe":
                 sendData = b'D|R|05|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
+                send = client.send(sendData)
+                canSend = False
+            elif action == "unsubscribe":
+                sendData = b'D|R|08|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 send = client.send(sendData)
                 canSend = False
             else:
@@ -51,6 +55,10 @@ def listenLoop():
             print("subscribe_ack#successful")
         elif opcode == "07":
             print("subscribe_ack#failed")
+        elif opcode == "09":
+            print("unsubscribe_ack#successful")
+        elif opcode == "10":
+            print("unsubscribe_ack#failed")
         else:
             print("ERROR: unrecognized opcode")
 

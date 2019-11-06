@@ -21,7 +21,7 @@ try:
             # Receive response
             print('waiting to receive')
             data, server = sock.recvfrom(4096)
-            print('received {!r}'.format(data))
+            print('received: ', data)
 
 finally:
     print('closing socket')

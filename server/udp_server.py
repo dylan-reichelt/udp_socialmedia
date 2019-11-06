@@ -57,17 +57,11 @@ class Server:
     
     def createtoken(self):
         return random.getrandbits(32)
+    
+    def checkLogin(self, token):
+        logged = False
+        
+        if token in self.tokenList:
+            logged = True
 
-
-"""
-while True:
-    print('\nwaiting to receive message')
-    data, address = sock.recvfrom(4096)
-
-    print('received {} bytes from {}'.format(len(data), address))
-    print(data)
-
-    if data:
-        sent = sock.sendto(data, address)
-        print('sent {} bytes back to {}'.format(sent, address))
-"""
+        return logged

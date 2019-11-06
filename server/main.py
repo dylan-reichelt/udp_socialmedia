@@ -2,16 +2,21 @@ from udp_server import Server
 
 
 def main():
-    testServer = Server()
+    udpServer = Server()
 
     while True:
-        data, address = testServer.listen()
-        print('received {} bytes from {}'.format(len(data), address))
-        print(data)
+        data, address = udpServer.listen()
 
         if data:
-            sent = testServer.send(data, address)
-            print('sent {} bytes back to {}'.format(sent, address))
+            action, info = data.decode("utf-8").split("#")
+
+            if action == "login":
+                user, password = info.split("&")
+                udpServer.logon(user, password, address)
+                sent = udpServer.send(b'LOGIN SUCCESSFUL', address)
+            else:
+                sent = udpServer.send(b'ERROR: not a recognized command', address)
+
 
 if __name__ == "__main__":
     main()

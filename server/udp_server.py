@@ -1,11 +1,14 @@
 import socket
 import sys
+from user import User
 
 class Server:
     def __init__(self):
-        userDict = {"dylan" : "programmer",
+        self.userDict = {"dylan" : "programmer",
                     "alex" : "loser",
                     "max" : "gamer"}
+        
+        self.onlineUsers = []
 
         # Creates a UDP Socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -21,6 +24,12 @@ class Server:
     
     def send(self, data, address):
         return self.sock.sendto(data, address)
+    
+    def logon(self, name, password, address):
+        if name in self.userDict.keys() and self.userDict[name] == password:
+            return True
+        else:
+            return False
 
 """
 while True:

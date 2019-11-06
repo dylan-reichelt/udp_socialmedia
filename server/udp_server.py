@@ -51,9 +51,11 @@ class Server:
 
             self.tokenList.append(token)
             self.onlineUsers.append(tempUser)
-            return b'login_ack#successful&' + str(token).encode("ascii", "backslashreplace")
+            returnMe = sendData = b'D|R|03|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+            return returnMe
         else:
-            return b'login_ack#failed'
+            returnMe = b'D|R|04|0|0|0'
+            return returnMe
     
     def createtoken(self):
         return random.getrandbits(32)

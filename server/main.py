@@ -8,15 +8,19 @@ def main():
         data, address = udpServer.listen()
 
         if data:
-            action, info = data.decode("utf-8").split("#")
+            dataSplit = data.decode("utf-8").split("|")
 
-            if action == "login":
-                user, password = info.split("&")
+            firstInitial = dataSplit[0]
+            secondInitial = dataSplit[0]
+            opcode = dataSplit[2]
+            Token = dataSplit[3]
+            messageID = dataSplit[4]
+            payload = dataSplit[5]
+
+            if opcode == "02":
+                user, password = payload.split("&")
                 ack = udpServer.logon(user, password, address)
                 sent = udpServer.send(ack, address)
-            else:
-                sent = udpServer.send(b'ERROR: not a recognized command', address)
-
 
 if __name__ == "__main__":
     main()

@@ -9,7 +9,6 @@ Token = 0
 def sendLoop():
 
     while True:
-        # Send data
         message = input()
         global Token
         action, data = message.split("#")

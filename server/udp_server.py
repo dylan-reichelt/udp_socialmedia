@@ -2,6 +2,7 @@ import socket
 import sys
 import random
 import datetime
+import threading
 
 from user import User
 
@@ -67,8 +68,9 @@ class Server:
 
         sendData = b'D|R|0|0|0|0'
         if self.checkLogin(token):
+            tempUser = self.tokenDict[token]
+            tempUser.lastActive = datetime.datetime.now()
             if user in self.userDict.keys():
-                tempUser = self.tokenDict[token]
                 tempUser.subs.append(user)
                 sendData = b'D|R|06|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
             else:
@@ -83,6 +85,7 @@ class Server:
         sendData = b'D|R|0|0|0|0'
         if self.checkLogin(token):
             tempUser = self.tokenDict[token]
+            tempUser.lastActive = datetime.datetime.now()
             if user in tempUser.subs:
                 tempUser.subs.remove(user)
                 sendData = b'D|R|09|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
@@ -99,6 +102,7 @@ class Server:
         sendData = b'D|R|0|0|0|0'
         if self.checkLogin(token):
             userData = self.tokenDict[token]
+            userData.lastActive = datetime.datetime.now()
             payloadFinal = "<" + userData.User + ">" + payload
             self.messageList.insert(0, payloadFinal)
 
@@ -119,6 +123,7 @@ class Server:
         sendData = b'D|R|0|0|0|0'
         if self.checkLogin(token):
             userData = self.tokenDict[token]
+            userData.lastActive = datetime.datetime.now()
             for listMessage in self.messageList:
                 if number == 0:
                     break
@@ -160,3 +165,18 @@ class Server:
                 break
         
         return returnUser
+    
+    def checkTime(self):
+        now = datetime.datetime.now()
+        removeUser = []
+        for tempUser in self.tokenDict.values():
+            tempTime = now - tempUser.lastActive
+            seconds = tempTime.total_seconds()
+            if seconds > 40:
+                removeUser.append(tempUser.Token)
+
+        for token in removeUser:
+            del self.tokenDict[token]
+    
+    
+

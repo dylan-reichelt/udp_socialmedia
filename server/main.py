@@ -16,6 +16,8 @@ def main():
             Token = dataSplit[3]
             messageID = dataSplit[4]
             payload = dataSplit[5]
+
+            udpServer.checkTime()
             
             if opcode == "02":
                 user, password = payload.split("&")

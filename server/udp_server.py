@@ -8,11 +8,15 @@ from user import User
 
 class Server:
     def __init__(self):
-        self.userDict = {"dylan" : "programmer",
-                    "alex" : "loser",
-                    "max" : "gamer",
-                    "rob" : "friend",
-                    "sina": "backwoods"}
+        self.userDict = {}
+        
+        f = open("users.txt", "r+")
+        fileLines = f.readlines()
+
+        for line in fileLines:
+            user, password = line.split("&")
+            password = password [:-1]
+            self.userDict.update({user: password})
         
         self.tokenDict = {}
         self.messageList = []

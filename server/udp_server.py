@@ -10,7 +10,9 @@ class Server:
     def __init__(self):
         self.userDict = {"dylan" : "programmer",
                     "alex" : "loser",
-                    "max" : "gamer"}
+                    "max" : "gamer",
+                    "rob" : "friend",
+                    "sina": "backwoods"}
         
         self.tokenDict = {}
         self.messageList = []
@@ -23,6 +25,7 @@ class Server:
         self.sock.bind(self.server_address)
 
     def listen(self):
+
         print('\nwaiting to receive message')
         data, address = self.sock.recvfrom(4096)
         return [data, address]
@@ -57,6 +60,7 @@ class Server:
             return sendData
         
     def subscribe(self, user, token):
+
         sendData = b'D|R|0|0|0|0'
         if self.checkLogin(token):
             if user in self.userDict.keys():
@@ -71,6 +75,7 @@ class Server:
         return sendData
     
     def unsubscribe(self, user, token):
+
         sendData = b'D|R|0|0|0|0'
         if self.checkLogin(token):
             tempUser = self.tokenDict[token]
@@ -86,6 +91,7 @@ class Server:
         return sendData
     
     def post(self, payload, token):
+
         sendData = b'D|R|0|0|0|0'
         if self.checkLogin(token):
             userData = self.tokenDict[token]
@@ -96,6 +102,7 @@ class Server:
                 if userData.User in tempUser.subs:
                     forwardData = b'D|R|13|' + str(tempUser.Token).encode("ascii", "backslashreplace") + b'|0|' + str(payloadFinal).encode("ascii", "backslashreplace")
                     self.send(forwardData, tempUser.address)
+                    tempData, tempAddress = self.listen()
             
             sendData = b'D|R|12|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
         
@@ -104,6 +111,27 @@ class Server:
             
         return sendData
     
+    def retrieve(self, token, number):
+        sendData = b'D|R|0|0|0|0'
+        if self.checkLogin(token):
+            userData = self.tokenDict[token]
+            for listMessage in self.messageList:
+                if number == 0:
+                    break
+                
+                user, message = listMessage.split(">")
+                user = user[1:]
+                if user in userData.subs:
+                    forwardData = b'D|R|16|' + str(token).encode("ascii", "backslashreplace") + b'|0|' + str(listMessage).encode("ascii", "backslashreplace")
+                    self.send(forwardData, userData.address)
+                    number += -1
+            
+            sendData = b'D|R|17|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+        else:
+            sendData = b'D|R|01|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+
+        return sendData
+
     def createtoken(self):
         return random.getrandbits(32)
     

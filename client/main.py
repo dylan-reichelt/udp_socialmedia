@@ -32,6 +32,10 @@ def sendLoop():
                 sendData = b'D|R|11|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 send = client.send(sendData)
                 canSend = False
+            elif action == "retrieve":
+                sendData = b'D|R|15|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
+                send = client.send(sendData)
+                canSend = False
             else:
                 print("ERROR: Not a recognized action")
 
@@ -69,6 +73,12 @@ def listenLoop():
             print("post_ack#successful")
         elif opcode == "13":
             print(str(payload))
+            sendData = b'D|R|14|' + str(Token).encode("ascii", "backslashreplace") + b'|0|0'
+            send = client.send(sendData)
+        elif opcode == "16":
+            print(str(payload))
+        elif opcode == "17":
+            print("retrieve_ack#successful")
         else:
             print("ERROR: unrecognized opcode")
 

@@ -7,8 +7,6 @@ class Client:
         # Create a UDP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.server_address = (server, 10000)
-        
-        #message = b'login#dylan&programmer'
     
     def send(self, sendData):
         self.sock.sendto(sendData, self.server_address)

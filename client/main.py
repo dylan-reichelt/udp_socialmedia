@@ -36,6 +36,10 @@ def sendLoop():
                 sendData = b'D|R|15|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 send = client.send(sendData)
                 canSend = False
+            elif action == "logout":
+                sendData = b'D|R|18|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
+                send = client.send(sendData)
+                canSend = False
             else:
                 print("ERROR: Not a recognized action")
 
@@ -79,6 +83,8 @@ def listenLoop():
             print(str(payload))
         elif opcode == "17":
             print("retrieve_ack#successful")
+        elif opcode == "19":
+            print("logout_ack#successful")
         else:
             print("ERROR: unrecognized opcode")
 

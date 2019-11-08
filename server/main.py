@@ -34,6 +34,9 @@ def main():
                 number = int(payload)
                 ack = udpServer.retrieve(Token, number)
                 send = udpServer.send(ack, address)
+            elif opcode == "18":
+                ack = udpServer.logout(Token)
+                send = udpServer.send(ack, address)
 
 if __name__ == "__main__":
     main()

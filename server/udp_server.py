@@ -131,6 +131,16 @@ class Server:
             sendData = b'D|R|01|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
 
         return sendData
+    
+    def logout(self, token):
+        sendData = b'D|R|0|0|0|0'
+        if self.checkLogin(token):
+            del self.tokenDict[token]
+            sendData = b'D|R|19|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+        else:
+            sendData = b'D|R|01|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
+        
+        return sendData
 
     def createtoken(self):
         return random.getrandbits(32)

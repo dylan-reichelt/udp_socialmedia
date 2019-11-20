@@ -39,6 +39,8 @@ def main():
             elif opcode == "18":
                 ack = udpServer.logout(Token)
                 send = udpServer.send(ack, address)
+            else:
+                print("Resetting...")
 
 if __name__ == "__main__":
     main()

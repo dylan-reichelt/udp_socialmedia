@@ -1,6 +1,7 @@
 from udp_client import Client
 from time import sleep
 import threading
+import hashlib
 
 client = Client('localhost')
 canSend = True
@@ -16,31 +17,46 @@ def sendLoop():
 
         if action and canSend:
             if action == "login":
+
+                # Hashing Password so no plaintext pass is sent over the network
+                str(data).encode("ascii", "backslashreplace")
+                user, plainPass = data.split("&")
+                binPlainPass = plainPass.encode("ascii", "backslashreplace")
+                hashpass = hashlib.sha256(binPlainPass).hexdigest()
+
+                # Setting the data back to the user and now hashpass
+                data = user + "&" + hashpass
                 sendData = b'D|R|02|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 sent = client.send(sendData)
                 canSend = False
+
             elif action == "subscribe":
                 sendData = b'D|R|05|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 send = client.send(sendData)
                 canSend = False
+
             elif action == "unsubscribe":
                 sendData = b'D|R|08|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 send = client.send(sendData)
                 canSend = False
+
             elif action == "post":
                 sendData = b'D|R|11|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 send = client.send(sendData)
                 canSend = False
+
             elif action == "retrieve":
                 sendData = b'D|R|15|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 send = client.send(sendData)
                 canSend = False
+
             elif action == "logout":
                 sendData = b'D|R|18|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 send = client.send(sendData)
                 canSend = False
+
             else:
-                print("ERROR: Not a recognized action")
+                print("ERROR: Not a recognized action resetting...")
 
 def listenLoop():
     global canSend
@@ -85,7 +101,7 @@ def listenLoop():
         elif opcode == "19":
             print("logout_ack#successful")
         else:
-            print("ERROR: unrecognized opcode")
+            print("ERROR: unrecognized opcode resetting...")
 
         canSend = True
 

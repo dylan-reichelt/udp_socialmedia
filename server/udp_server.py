@@ -172,7 +172,7 @@ class Server:
         for tempUser in self.tokenDict.values():
             tempTime = now - tempUser.lastActive
             seconds = tempTime.total_seconds()
-            if seconds > 40:
+            if seconds > 120:
                 removeUser.append(tempUser.Token)
 
         for token in removeUser:

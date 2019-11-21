@@ -41,8 +41,9 @@ class Client:
             if len(tempBytes) == 32:
                 byteList.append(tempBytes)
                 tempBytes = ""
-    
-        byteList.append(tempBytes)
+        
+        if tempBytes is not "":
+            byteList.append(tempBytes)
 
         for plaintext in byteList:
             encryptedData += aesBody.encrypt(plaintext)

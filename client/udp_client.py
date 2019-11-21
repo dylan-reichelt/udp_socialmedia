@@ -4,13 +4,17 @@ import sys
 from aes_encryption import aes
 
 class Client:
-    def __init__(self, server):
+    def __init__(self, server, key):
 
         # Create a UDP socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.server_address = (server, 10000)
 
-        self.key = "aqldnjeueolndjgu"
+        # Sending key for encryption and decryption
+        self.key = key
+        keyPayload = b'D|R|20|0|0|' + str(self.key).encode("ascii", "backslashreplace")
+
+        self.sock.sendto(keyPayload, self.server_address)
     
     def send(self, sendData):
         sendData = self.encrypt(sendData).encode("ascii", "backslashreplace")

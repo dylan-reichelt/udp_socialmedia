@@ -4,8 +4,10 @@ from time import sleep
 import threading
 import hashlib
 import random
+import os
+import binascii
 
-client = Client('localhost')
+client = Client('localhost', binascii.b2a_hex(os.urandom(8)).decode("utf-8"))
 canSend = True
 Token = 0
 
@@ -103,6 +105,8 @@ def listenLoop():
             print("retrieve_ack#successful")
         elif opcode == "19":
             print("logout_ack#successful")
+        elif opcode == "21":
+            print("key_ack#successful")
         else:
             print("ERROR: unrecognized opcode resetting...")
 
@@ -111,7 +115,6 @@ def listenLoop():
 thread = threading.Thread(target = listenLoop)
 thread.daemon = True
 thread.start()
-
 
 if __name__ == "__main__":
     sendLoop()

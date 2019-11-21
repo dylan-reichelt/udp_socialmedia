@@ -44,6 +44,10 @@ def main():
                 ack = udpServer.logout(Token)
                 udpServer.send(ack, address)
 
+            elif opcode == "20":
+                ack = udpServer.setKey(payload, address)
+                udpServer.send(ack, address)
+
             else:
                 print("Resetting...")
 

@@ -9,7 +9,6 @@ from aes_encryption import aes
 
 class Server:
     def __init__(self):
-        self.key = "aqldnjeueolndjgu"
         self.userDict = {}
         
         f = open("users.txt", "r+")
@@ -21,6 +20,7 @@ class Server:
             self.userDict.update({user: password})
         
         self.tokenDict = {}
+        self.keyDict = {}
         self.messageList = []
 
         # Creates a UDP Socket
@@ -34,11 +34,18 @@ class Server:
 
         print('\nwaiting to receive message')
         data, address = self.sock.recvfrom(4096)
-        data = self.decrypt(data.decode("utf-8"))
+        
+        if "|20|0|0|" in data.decode("utf-8"):
+            return [data.decode("utf-8"), address]
+        else: 
+            key = self.keyDict[address]
+            data = self.decrypt(data.decode("utf-8"), key)
+
         return [data, address]
     
     def send(self, data, address):
-        data = self.encrypt(data).encode("ascii", "backslashreplace")
+        key = self.keyDict[address]
+        data = self.encrypt(data, key).encode("ascii", "backslashreplace")
         return self.sock.sendto(data, address)
     
     def logon(self, name, password, address):
@@ -181,9 +188,9 @@ class Server:
         for token in removeUser:
             del self.tokenDict[token]
 
-    def encrypt(self, data):
+    def encrypt(self, data, key):
         hexPlaintext = data.hex()
-        aesBody = aes(self.key)
+        aesBody = aes(key)
     
         byteList = []
         tempBytes = ""
@@ -206,8 +213,8 @@ class Server:
         return encryptedData
     
 
-    def decrypt(self, cypherText):
-        aesBody = aes(self.key)
+    def decrypt(self, cypherText, key):
+        aesBody = aes(key)
 
         tempBytes = ""
         decryptedText = ""
@@ -221,7 +228,10 @@ class Server:
                 tempBytes = ""
 
         return decryptedText
-
     
+    def setKey(self, key, address):
+        self.keyDict.update({address: key})
+        sendData = b'D|R|21|0|0|0'
+        return sendData
     
 

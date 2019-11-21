@@ -81,32 +81,45 @@ def listenLoop():
         if opcode == "03":
             print("login_ack#successful")
             Token = tempToken
+
         elif opcode == "04":
             print("login_ack#failed")
+
         elif opcode == "01":
             print("ERROR: login to perform this action!")
+
         elif opcode == "06":
             print("subscribe_ack#successful")
+
         elif opcode == "07":
             print("subscribe_ack#failed")
+
         elif opcode == "09":
             print("unsubscribe_ack#successful")
+
         elif opcode == "10":
             print("unsubscribe_ack#failed")
+
         elif opcode == "12":
             print("post_ack#successful")
+
         elif opcode == "13":
             print(str(payload))
             sendData = b'D|R|14|' + str(Token).encode("ascii", "backslashreplace") + b'|0|0'
             client.send(sendData)
+
         elif opcode == "16":
             print(str(payload))
+
         elif opcode == "17":
             print("retrieve_ack#successful")
+
         elif opcode == "19":
             print("logout_ack#successful")
+
         elif opcode == "21":
             print("key_ack#successful")
+            
         else:
             print("ERROR: unrecognized opcode resetting...")
 

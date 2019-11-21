@@ -20,10 +20,10 @@ python3 main.py
 ## Usage
 Built in users and passwords (They are read from the users.txt file but the passwords are hashed):
 
-dylan&programmer
-max&gamer
-sina&backwoods
-rob&friend
+dylan&programmer,
+max&gamer,
+sina&backwoods,
+rob&friend,
 alex&loser
 
 Commands for the client (server side is all handled on its own, there is nothing to interface with)

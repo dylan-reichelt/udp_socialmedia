@@ -5,10 +5,11 @@ import datetime
 import threading
 
 from user import User
-
+from aes_encryption import aes
 
 class Server:
     def __init__(self):
+        self.key = "aqldnjeueolndjgu"
         self.userDict = {}
         
         f = open("users.txt", "r+")
@@ -33,9 +34,11 @@ class Server:
 
         print('\nwaiting to receive message')
         data, address = self.sock.recvfrom(4096)
+        data = self.decrypt(data.decode("utf-8"))
         return [data, address]
     
     def send(self, data, address):
+        data = self.encrypt(data).encode("ascii", "backslashreplace")
         return self.sock.sendto(data, address)
     
     def logon(self, name, password, address):
@@ -177,6 +180,48 @@ class Server:
 
         for token in removeUser:
             del self.tokenDict[token]
+
+    def encrypt(self, data):
+        hexPlaintext = data.hex()
+        aesBody = aes(self.key)
+    
+        byteList = []
+        tempBytes = ""
+        encryptedData = ""
+
+        for i in range(len(hexPlaintext)):
+            if i % 2 == 0:
+                temp = hexPlaintext[i] + hexPlaintext[i + 1]
+                tempBytes += temp
+        
+            if len(tempBytes) == 32:
+                byteList.append(tempBytes)
+                tempBytes = ""
+    
+        byteList.append(tempBytes)
+
+        for plaintext in byteList:
+            encryptedData += aesBody.encrypt(plaintext)
+    
+        return encryptedData
+    
+
+    def decrypt(self, cypherText):
+        aesBody = aes(self.key)
+
+        tempBytes = ""
+        decryptedText = ""
+        for i in range(len(cypherText)):
+            if i % 2 == 0:
+                temp = cypherText[i] + cypherText[i + 1]
+                tempBytes += temp
+        
+            if len(tempBytes) == 32:
+                decryptedText += aesBody.decrypt(tempBytes)
+                tempBytes = ""
+
+        return decryptedText
+
     
     
 

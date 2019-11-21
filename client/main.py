@@ -1,7 +1,9 @@
 from udp_client import Client
 from time import sleep
+
 import threading
 import hashlib
+import random
 
 client = Client('localhost')
 canSend = True
@@ -26,33 +28,34 @@ def sendLoop():
 
                 # Setting the data back to the user and now hashpass
                 data = user + "&" + hashpass
+
                 sendData = b'D|R|02|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
-                sent = client.send(sendData)
+                client.send(sendData)
                 canSend = False
 
             elif action == "subscribe":
                 sendData = b'D|R|05|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
-                send = client.send(sendData)
+                client.send(sendData)
                 canSend = False
 
             elif action == "unsubscribe":
                 sendData = b'D|R|08|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
-                send = client.send(sendData)
+                client.send(sendData)
                 canSend = False
 
             elif action == "post":
                 sendData = b'D|R|11|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
-                send = client.send(sendData)
+                client.send(sendData)
                 canSend = False
 
             elif action == "retrieve":
                 sendData = b'D|R|15|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
-                send = client.send(sendData)
+                client.send(sendData)
                 canSend = False
 
             elif action == "logout":
                 sendData = b'D|R|18|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
-                send = client.send(sendData)
+                client.send(sendData)
                 canSend = False
 
             else:
@@ -63,8 +66,8 @@ def listenLoop():
     global Token 
 
     while True:
-        tempData, server = client.listen()
-        data = tempData.decode("ascii")
+        data, server = client.listen()
+
         dataSplit = data.split("|")
         firstInitial = dataSplit[0]
         secondInitial = dataSplit[1]
@@ -93,7 +96,7 @@ def listenLoop():
         elif opcode == "13":
             print(str(payload))
             sendData = b'D|R|14|' + str(Token).encode("ascii", "backslashreplace") + b'|0|0'
-            send = client.send(sendData)
+            client.send(sendData)
         elif opcode == "16":
             print(str(payload))
         elif opcode == "17":

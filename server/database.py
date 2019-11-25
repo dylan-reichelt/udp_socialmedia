@@ -20,6 +20,11 @@ class database:
         [time] datetime,
         [message] text)''')
 
+        self.c.execute('''CREATE TABLE IF NOT EXISTS subscriptions 
+        ([generated_id] INTEGER PRIMARY KEY,
+        [user] text,
+        [subbed] text)''')
+
         self.conn.commit()
     
     def insertUser(self, user, hashedPass, time):

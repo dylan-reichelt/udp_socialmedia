@@ -12,9 +12,6 @@ class Server:
     def __init__(self):
         self.db = database()
         
-        f = open("users.txt", "r+")
-        fileLines = f.readlines()
-        
         self.tokenDict = {}
         self.keyDict = {}
         self.messageList = []

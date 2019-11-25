@@ -6,18 +6,14 @@ import threading
 
 from user import User
 from aes_encryption import aes
+from database import database
 
 class Server:
     def __init__(self):
-        self.userDict = {}
+        self.db = database()
         
         f = open("users.txt", "r+")
         fileLines = f.readlines()
-
-        for line in fileLines:
-            user, password = line.split("&")
-            password = password [:-1]
-            self.userDict.update({user: password})
         
         self.tokenDict = {}
         self.keyDict = {}
@@ -49,9 +45,10 @@ class Server:
         return self.sock.sendto(data, address)
     
     def logon(self, name, password, address):
+        
 
         #logon successful name and password match
-        if name in self.userDict.keys() and self.userDict[name] == password:
+        if self.db.authenticateUser(name, password):
             
             token = 0
             while True:
@@ -80,7 +77,7 @@ class Server:
         if self.checkLogin(token):
             tempUser = self.tokenDict[token]
             tempUser.lastActive = datetime.datetime.now()
-            if user in self.userDict.keys():
+            if self.db.verifyUserExists(user):
                 tempUser.subs.append(user)
                 sendData = b'D|R|06|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
             else:

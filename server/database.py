@@ -21,8 +21,7 @@ class database:
         [message] text)''')
 
         self.c.execute('''CREATE TABLE IF NOT EXISTS subscriptions 
-        ([generated_id] INTEGER PRIMARY KEY,
-        [user] text,
+        ([user] text,
         [subbed] text)''')
 
         self.conn.commit()

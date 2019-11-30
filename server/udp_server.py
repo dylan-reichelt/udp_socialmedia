@@ -73,7 +73,7 @@ class Server:
         if self.checkLogin(token):
             tempUser = self.tokenDict[token]
             tempUser.lastActive = datetime.datetime.now()
-            if self.db.verifyUserExists(user):
+            if self.db.addSub(tempUser.User, user):
                 tempUser.subs.append(user)
                 sendData = b'D|R|06|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
             else:
@@ -103,14 +103,17 @@ class Server:
     def post(self, payload, token):
 
         sendData = b'D|R|0|0|0|0'
+        
         if self.checkLogin(token):
             userData = self.tokenDict[token]
             userData.lastActive = datetime.datetime.now()
             payloadFinal = "<" + userData.User + ">" + payload
             self.messageList.insert(0, payloadFinal)
 
+            subList = self.db.getSubs(userData.User)
+
             for tempUser in self.tokenDict.values():
-                if userData.User in tempUser.subs:
+                if tempUser.User in subList:
                     forwardData = b'D|R|13|' + str(tempUser.Token).encode("ascii", "backslashreplace") + b'|0|' + str(payloadFinal).encode("ascii", "backslashreplace")
                     self.send(forwardData, tempUser.address)
                     tempData, tempAddress = self.listen()

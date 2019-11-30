@@ -55,11 +55,23 @@ class database:
         
         return returnValue
     
-    def addSub(user, subbedTo):
-        databaseSize = self.c.execute('''SELECT COUNT(*) FROM users''').fetchall()[0][0]
+    def addSub(self, user, subbedTo):
+        returnValue = False
 
-        sql = '''INSERT INTO users (generated_id, user, subbed) VALUES (?, ?, ?)'''
-        data = (databaseSize, user, hashedPass, time)
-        self.c.execute(sql, data)
-        self.conn.commit()
+        if self.verifyUserExists(subbedTo):
+            databaseSize = self.c.execute('''SELECT COUNT(*) FROM subscriptions''').fetchall()[0][0]
 
+            sql = '''INSERT INTO subscriptions (generated_id, user, subbed) VALUES (?, ?, ?)'''
+            data = (databaseSize, user, subbedTo)
+            self.c.execute(sql, data)
+            self.conn.commit()
+
+            returnValue = True
+        
+        return returnValue
+    
+    def getSubs(self, user):
+        data = (user,)
+        userInfo = self.c.execute('''SELECT user FROM subscriptions where subbed = ?''', data).fetchone()
+        
+        return userInfo

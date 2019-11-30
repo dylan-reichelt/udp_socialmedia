@@ -47,6 +47,11 @@ def main():
             elif opcode == "20":
                 ack = udpServer.setKey(payload, address)
                 udpServer.send(ack, address)
+            
+            elif opcode == "22":
+                user, password = payload.split("&")
+                ack = udpServer.createUser(user, password)
+                udpServer.send(ack, address)
 
             else:
                 print("Resetting...")

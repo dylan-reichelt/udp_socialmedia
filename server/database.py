@@ -32,7 +32,6 @@ class database:
 
         sql = '''INSERT or ignore INTO users (generated_id, user, password, last_active) VALUES (?, ?, ?, ?)'''
         data = (databaseSize, user, hashedPass, time)
-        print(data)
         self.c.execute(sql, data)
         self.conn.commit()
 
@@ -55,4 +54,12 @@ class database:
             returnValue = True
         
         return returnValue
+    
+    def addSub(user, subbedTo):
+        databaseSize = self.c.execute('''SELECT COUNT(*) FROM users''').fetchall()[0][0]
+
+        sql = '''INSERT INTO users (generated_id, user, subbed) VALUES (?, ?, ?)'''
+        data = (databaseSize, user, hashedPass, time)
+        self.c.execute(sql, data)
+        self.conn.commit()
 

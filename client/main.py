@@ -34,6 +34,19 @@ def sendLoop():
                 sendData = b'D|R|02|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
                 client.send(sendData)
                 canSend = False
+            
+            elif action == "create":
+                # Hashing Password so no plaintext pass is sent over the network
+                str(data).encode("ascii", "backslashreplace")
+                user, plainPass = data.split("&")
+                binPlainPass = plainPass.encode("ascii", "backslashreplace")
+                hashpass = hashlib.sha256(binPlainPass).hexdigest()
+
+                data = user + "&" + hashpass
+
+                sendData = b'D|R|22|0|0|' + str(data).encode("ascii", "backslashreplace")
+                client.send(sendData)
+                canSend = False              
 
             elif action == "subscribe":
                 sendData = b'D|R|05|' + str(Token).encode("ascii", "backslashreplace") + b'|0|' + str(data).encode("ascii", "backslashreplace")
@@ -119,6 +132,12 @@ def listenLoop():
 
         elif opcode == "21":
             print("key_ack#successful")
+        
+        elif opcode == "23":
+            print("create_ack#successful")
+        
+        elif opcode == "24":
+            print("create_ack#failed")
             
         else:
             print("ERROR: unrecognized opcode resetting...")

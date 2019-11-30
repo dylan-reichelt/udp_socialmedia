@@ -43,7 +43,6 @@ class Server:
     
     def logon(self, name, password, address):
         
-
         #logon successful name and password match
         if self.db.authenticateUser(name, password):
             
@@ -181,6 +180,15 @@ class Server:
 
         for token in removeUser:
             del self.tokenDict[token]
+    
+    def createUser(self, user, hashPass):
+        sendData = b'D|R|0|0|0|0'
+        if not self.db.verifyUserExists(user):
+            self.db.insertUser(user, hashPass, datetime.datetime.now())
+            sendData = b'D|R|23|0|0|0'
+        else:
+            sendData = b'D|R|24|0|0|0'
+        return sendData
 
     def encrypt(self, data, key):
         hexPlaintext = data.hex()

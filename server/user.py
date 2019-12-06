@@ -5,4 +5,3 @@ class User:
         self.Token = None
         self.lastActive = None
         self.address = None
-        self.subs = []

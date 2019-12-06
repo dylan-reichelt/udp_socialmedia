@@ -58,10 +58,9 @@ class database:
         returnValue = False
 
         if self.verifyUserExists(subbedTo):
-            databaseSize = self.c.execute('''SELECT COUNT(*) FROM subscriptions''').fetchall()[0][0]
 
-            sql = '''INSERT INTO subscriptions (generated_id, user, subbed) VALUES (?, ?, ?)'''
-            data = (databaseSize, user, subbedTo)
+            sql = '''INSERT INTO subscriptions (user, subbed) VALUES (?, ?)'''
+            data = (user, subbedTo)
             self.c.execute(sql, data)
             self.conn.commit()
 
@@ -69,8 +68,33 @@ class database:
         
         return returnValue
     
+    def removeSub(self, user, subbedTo):
+        returnValue = False
+        data = (user, subbedTo)
+        userInfo = self.c.execute('''SELECT user FROM subscriptions WHERE user = ? AND subbed = ?''', data).fetchone()
+
+        if userInfo is not None:
+
+            sql = '''DELETE FROM subscriptions WHERE user = ? AND subbed = ?'''
+            data = (user, subbedTo)
+            self.c.execute(sql, data)
+            self.conn.commit()
+
+            returnValue = True
+        
+        return returnValue
+
+    
     def getSubs(self, user):
         data = (user,)
         userInfo = self.c.execute('''SELECT user FROM subscriptions where subbed = ?''', data).fetchone()
         
         return userInfo
+    
+    def insertMessage(self, user, time, message):
+        databaseSize = self.c.execute('''SELECT COUNT(*) FROM messages''').fetchall()[0][0]
+
+        sql = '''INSERT INTO messages (generated_id, user, time, message) VALUES (?, ?, ?, ?)'''
+        data = (databaseSize, user, time, message)
+        self.c.execute(sql, data)
+        self.conn.commit()

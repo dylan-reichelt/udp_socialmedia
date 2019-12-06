@@ -74,7 +74,6 @@ class Server:
             tempUser = self.tokenDict[token]
             tempUser.lastActive = datetime.datetime.now()
             if self.db.addSub(tempUser.User, user):
-                tempUser.subs.append(user)
                 sendData = b'D|R|06|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
             else:
                 sendData = b'D|R|07|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
@@ -89,8 +88,7 @@ class Server:
         if self.checkLogin(token):
             tempUser = self.tokenDict[token]
             tempUser.lastActive = datetime.datetime.now()
-            if user in tempUser.subs:
-                tempUser.subs.remove(user)
+            if self.db.removeSub(tempUser.User, user):
                 sendData = b'D|R|09|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
             else:
                 sendData = b'D|R|10|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
@@ -112,11 +110,12 @@ class Server:
 
             subList = self.db.getSubs(userData.User)
 
-            for tempUser in self.tokenDict.values():
-                if tempUser.User in subList:
-                    forwardData = b'D|R|13|' + str(tempUser.Token).encode("ascii", "backslashreplace") + b'|0|' + str(payloadFinal).encode("ascii", "backslashreplace")
-                    self.send(forwardData, tempUser.address)
-                    tempData, tempAddress = self.listen()
+            if subList is not None:
+                for tempUser in self.tokenDict.values():
+                    if tempUser.User in subList:
+                        forwardData = b'D|R|13|' + str(tempUser.Token).encode("ascii", "backslashreplace") + b'|0|' + str(payloadFinal).encode("ascii", "backslashreplace")
+                        self.send(forwardData, tempUser.address)
+                        tempData, tempAddress = self.listen()
             
             sendData = b'D|R|12|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
         
@@ -136,10 +135,13 @@ class Server:
                 
                 user, message = listMessage.split(">")
                 user = user[1:]
-                if user in userData.subs:
-                    forwardData = b'D|R|16|' + str(token).encode("ascii", "backslashreplace") + b'|0|' + str(listMessage).encode("ascii", "backslashreplace")
-                    self.send(forwardData, userData.address)
-                    number += -1
+                subList = self.db.getSubs(user)
+                
+                if subList is not None:
+                    if userData.User in subList:
+                        forwardData = b'D|R|16|' + str(token).encode("ascii", "backslashreplace") + b'|0|' + str(listMessage).encode("ascii", "backslashreplace")
+                        self.send(forwardData, userData.address)
+                        number += -1
             
             sendData = b'D|R|17|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
         else:
@@ -216,7 +218,6 @@ class Server:
             encryptedData += aesBody.encrypt(plaintext)
     
         return encryptedData
-    
 
     def decrypt(self, cypherText, key):
         aesBody = aes(key)

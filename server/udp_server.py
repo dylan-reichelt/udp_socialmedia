@@ -14,7 +14,6 @@ class Server:
         
         self.tokenDict = {}
         self.keyDict = {}
-        self.messageList = []
 
         # Creates a UDP Socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -106,7 +105,6 @@ class Server:
             userData = self.tokenDict[token]
             userData.lastActive = datetime.datetime.now()
             payloadFinal = "<" + userData.User + ">" + payload
-            self.messageList.insert(0, payloadFinal)
             self.db.insertMessage(userData.User, datetime.datetime.now(), payload)
 
             subList = self.db.getSubs(userData.User)
@@ -130,17 +128,21 @@ class Server:
         if self.checkLogin(token):
             userData = self.tokenDict[token]
             userData.lastActive = datetime.datetime.now()
-            for listMessage in self.messageList:
+            messageList = self.db.getMessages()
+            messageList.reverse()
+
+            for listMessage in messageList:
                 if number == 0:
                     break
                 
-                user, message = listMessage.split(">")
-                user = user[1:]
+                user = listMessage[1]
+                message = listMessage[3]
                 subList = self.db.getSubs(user)
+                finalMessage = "<" + user + ">" + message
 
                 if subList is not None:
                     if userData.User in subList:
-                        forwardData = b'D|R|16|' + str(token).encode("ascii", "backslashreplace") + b'|0|' + str(listMessage).encode("ascii", "backslashreplace")
+                        forwardData = b'D|R|16|' + str(token).encode("ascii", "backslashreplace") + b'|0|' + finalMessage.encode("ascii", "backslashreplace")
                         self.send(forwardData, userData.address)
                         number += -1
             

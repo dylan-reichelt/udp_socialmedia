@@ -98,3 +98,7 @@ class database:
         data = (databaseSize, user, time, message)
         self.c.execute(sql, data)
         self.conn.commit()
+    
+    def getMessages(self):
+        messageList = self.c.execute('''SELECT * FROM messages''').fetchall()
+        return messageList

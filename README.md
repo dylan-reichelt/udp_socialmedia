@@ -21,7 +21,7 @@ python3 main.py
 ```
 
 ## Usage
-Built in users and passwords (They are read from the users.txt file but the passwords are hashed):
+Built in users and passwords (Users read from database, but they are hashed):
 
 dylan&programmer,
 max&gamer,

@@ -7,6 +7,9 @@ to be a small Twitter like application. You are able to subscribe, login, etc.
 Make sure to have my python_aes.py application setup. As this program uses that for encryption and decryption of 
 the data sent back and forth between the server and the client (Instruction on how to install that in that readme).
 
+You will also need sqlite for the database. The database should automatically be created when
+the server is started up.
+
 On the server side simply cd to /server
 ```bash
 python3 main.py
@@ -28,6 +31,7 @@ alex&loser
 
 Commands for the client (server side is all handled on its own, there is nothing to interface with)
 ```python
+create#dylan&programmer
 login#dylan&programmer
 subscribe#max
 unsubscribe#max

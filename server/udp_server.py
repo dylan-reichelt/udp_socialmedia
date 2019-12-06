@@ -107,6 +107,7 @@ class Server:
             userData.lastActive = datetime.datetime.now()
             payloadFinal = "<" + userData.User + ">" + payload
             self.messageList.insert(0, payloadFinal)
+            self.db.insertMessage(userData.User, datetime.datetime.now(), payload)
 
             subList = self.db.getSubs(userData.User)
 
@@ -136,7 +137,7 @@ class Server:
                 user, message = listMessage.split(">")
                 user = user[1:]
                 subList = self.db.getSubs(user)
-                
+
                 if subList is not None:
                     if userData.User in subList:
                         forwardData = b'D|R|16|' + str(token).encode("ascii", "backslashreplace") + b'|0|' + str(listMessage).encode("ascii", "backslashreplace")

@@ -5,22 +5,15 @@ import datetime
 import threading
 
 from user import User
-
+from aes_encryption import aes
+from database import database
 
 class Server:
     def __init__(self):
-        self.userDict = {}
-        
-        f = open("users.txt", "r+")
-        fileLines = f.readlines()
-
-        for line in fileLines:
-            user, password = line.split("&")
-            password = password [:-1]
-            self.userDict.update({user: password})
+        self.db = database()
         
         self.tokenDict = {}
-        self.messageList = []
+        self.keyDict = {}
 
         # Creates a UDP Socket
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -33,15 +26,24 @@ class Server:
 
         print('\nwaiting to receive message')
         data, address = self.sock.recvfrom(4096)
+        
+        if "|20|0|0|" in data.decode("utf-8"):
+            return [data.decode("utf-8"), address]
+        else: 
+            key = self.keyDict[address]
+            data = self.decrypt(data.decode("utf-8"), key)
+
         return [data, address]
     
     def send(self, data, address):
+        key = self.keyDict[address]
+        data = self.encrypt(data, key).encode("ascii", "backslashreplace")
         return self.sock.sendto(data, address)
     
     def logon(self, name, password, address):
-
+        
         #logon successful name and password match
-        if name in self.userDict.keys() and self.userDict[name] == password:
+        if self.db.authenticateUser(name, password):
             
             token = 0
             while True:
@@ -70,8 +72,7 @@ class Server:
         if self.checkLogin(token):
             tempUser = self.tokenDict[token]
             tempUser.lastActive = datetime.datetime.now()
-            if user in self.userDict.keys():
-                tempUser.subs.append(user)
+            if self.db.addSub(tempUser.User, user):
                 sendData = b'D|R|06|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
             else:
                 sendData = b'D|R|07|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
@@ -86,8 +87,7 @@ class Server:
         if self.checkLogin(token):
             tempUser = self.tokenDict[token]
             tempUser.lastActive = datetime.datetime.now()
-            if user in tempUser.subs:
-                tempUser.subs.remove(user)
+            if self.db.removeSub(tempUser.User, user):
                 sendData = b'D|R|09|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
             else:
                 sendData = b'D|R|10|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
@@ -100,17 +100,21 @@ class Server:
     def post(self, payload, token):
 
         sendData = b'D|R|0|0|0|0'
+        
         if self.checkLogin(token):
             userData = self.tokenDict[token]
             userData.lastActive = datetime.datetime.now()
             payloadFinal = "<" + userData.User + ">" + payload
-            self.messageList.insert(0, payloadFinal)
+            self.db.insertMessage(userData.User, datetime.datetime.now(), payload)
 
-            for tempUser in self.tokenDict.values():
-                if userData.User in tempUser.subs:
-                    forwardData = b'D|R|13|' + str(tempUser.Token).encode("ascii", "backslashreplace") + b'|0|' + str(payloadFinal).encode("ascii", "backslashreplace")
-                    self.send(forwardData, tempUser.address)
-                    tempData, tempAddress = self.listen()
+            subList = self.db.getSubs(userData.User)
+
+            if subList is not None:
+                for tempUser in self.tokenDict.values():
+                    if tempUser.User in subList:
+                        forwardData = b'D|R|13|' + str(tempUser.Token).encode("ascii", "backslashreplace") + b'|0|' + str(payloadFinal).encode("ascii", "backslashreplace")
+                        self.send(forwardData, tempUser.address)
+                        tempData, tempAddress = self.listen()
             
             sendData = b'D|R|12|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
         
@@ -124,16 +128,23 @@ class Server:
         if self.checkLogin(token):
             userData = self.tokenDict[token]
             userData.lastActive = datetime.datetime.now()
-            for listMessage in self.messageList:
+            messageList = self.db.getMessages()
+            messageList.reverse()
+
+            for listMessage in messageList:
                 if number == 0:
                     break
                 
-                user, message = listMessage.split(">")
-                user = user[1:]
-                if user in userData.subs:
-                    forwardData = b'D|R|16|' + str(token).encode("ascii", "backslashreplace") + b'|0|' + str(listMessage).encode("ascii", "backslashreplace")
-                    self.send(forwardData, userData.address)
-                    number += -1
+                user = listMessage[1]
+                message = listMessage[3]
+                subList = self.db.getSubs(user)
+                finalMessage = "<" + user + ">" + message
+
+                if subList is not None:
+                    if userData.User in subList:
+                        forwardData = b'D|R|16|' + str(token).encode("ascii", "backslashreplace") + b'|0|' + finalMessage.encode("ascii", "backslashreplace")
+                        self.send(forwardData, userData.address)
+                        number += -1
             
             sendData = b'D|R|17|' + str(token).encode("ascii", "backslashreplace") + b'|0|0'
         else:
@@ -172,11 +183,64 @@ class Server:
         for tempUser in self.tokenDict.values():
             tempTime = now - tempUser.lastActive
             seconds = tempTime.total_seconds()
-            if seconds > 40:
+            if seconds > 120:
                 removeUser.append(tempUser.Token)
 
         for token in removeUser:
             del self.tokenDict[token]
     
+    def createUser(self, user, hashPass):
+        sendData = b'D|R|0|0|0|0'
+        if not self.db.verifyUserExists(user):
+            self.db.insertUser(user, hashPass, datetime.datetime.now())
+            sendData = b'D|R|23|0|0|0'
+        else:
+            sendData = b'D|R|24|0|0|0'
+        return sendData
+
+    def encrypt(self, data, key):
+        hexPlaintext = data.hex()
+        aesBody = aes(key)
+    
+        byteList = []
+        tempBytes = ""
+        encryptedData = ""
+
+        for i in range(len(hexPlaintext)):
+            if i % 2 == 0:
+                temp = hexPlaintext[i] + hexPlaintext[i + 1]
+                tempBytes += temp
+        
+            if len(tempBytes) == 32:
+                byteList.append(tempBytes)
+                tempBytes = ""
+    
+        byteList.append(tempBytes)
+
+        for plaintext in byteList:
+            encryptedData += aesBody.encrypt(plaintext)
+    
+        return encryptedData
+
+    def decrypt(self, cypherText, key):
+        aesBody = aes(key)
+
+        tempBytes = ""
+        decryptedText = ""
+        for i in range(len(cypherText)):
+            if i % 2 == 0:
+                temp = cypherText[i] + cypherText[i + 1]
+                tempBytes += temp
+        
+            if len(tempBytes) == 32:
+                decryptedText += aesBody.decrypt(tempBytes)
+                tempBytes = ""
+
+        return decryptedText
+    
+    def setKey(self, key, address):
+        self.keyDict.update({address: key})
+        sendData = b'D|R|21|0|0|0'
+        return sendData
     
 

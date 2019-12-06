@@ -1,6 +1,5 @@
 from udp_server import Server
 
-
 def main():
     udpServer = Server()
 
@@ -8,7 +7,7 @@ def main():
         data, address = udpServer.listen()
 
         if data:
-            dataSplit = data.decode("utf-8").split("|")
+            dataSplit = data.split("|")
 
             firstInitial = dataSplit[0]
             secondInitial = dataSplit[1]
@@ -22,23 +21,40 @@ def main():
             if opcode == "02":
                 user, password = payload.split("&")
                 ack = udpServer.logon(user, password, address)
-                sent = udpServer.send(ack, address)
+                udpServer.send(ack, address)
+
             elif opcode == "05":
                 ack = udpServer.subscribe(payload, Token)
-                send = udpServer.send(ack, address)
+                udpServer.send(ack, address)
+
             elif opcode == "08":
                 ack = udpServer.unsubscribe(payload, Token)
-                send = udpServer.send(ack, address)
+                udpServer.send(ack, address)
+
             elif opcode == "11":
                 ack = udpServer.post(payload, Token)
-                send = udpServer.send(ack, address)
+                udpServer.send(ack, address)
+
             elif opcode == "15":
                 number = int(payload)
                 ack = udpServer.retrieve(Token, number)
-                send = udpServer.send(ack, address)
+                udpServer.send(ack, address)
+
             elif opcode == "18":
                 ack = udpServer.logout(Token)
-                send = udpServer.send(ack, address)
+                udpServer.send(ack, address)
+
+            elif opcode == "20":
+                ack = udpServer.setKey(payload, address)
+                udpServer.send(ack, address)
+            
+            elif opcode == "22":
+                user, password = payload.split("&")
+                ack = udpServer.createUser(user, password)
+                udpServer.send(ack, address)
+
+            else:
+                print("Resetting...")
 
 if __name__ == "__main__":
     main()

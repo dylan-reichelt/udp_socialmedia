@@ -83,13 +83,13 @@ class database:
             returnValue = True
         
         return returnValue
-
     
     def getSubs(self, user):
         data = (user,)
-        userInfo = self.c.execute('''SELECT user FROM subscriptions where subbed = ?''', data).fetchone()
-        
-        return userInfo
+        userInfo = self.c.execute('''SELECT user FROM subscriptions where subbed = ?''', data).fetchall()
+        userList = list(sum(userInfo, ()))
+        print(userList)
+        return userList
     
     def insertMessage(self, user, time, message):
         databaseSize = self.c.execute('''SELECT COUNT(*) FROM messages''').fetchall()[0][0]

@@ -130,7 +130,6 @@ class Server:
             userData.lastActive = datetime.datetime.now()
             messageList = self.db.getMessages()
             messageList.reverse()
-
             for listMessage in messageList:
                 if number == 0:
                     break

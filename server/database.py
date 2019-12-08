@@ -88,7 +88,6 @@ class database:
         data = (user,)
         userInfo = self.c.execute('''SELECT user FROM subscriptions where subbed = ?''', data).fetchall()
         userList = list(sum(userInfo, ()))
-        print(userList)
         return userList
     
     def insertMessage(self, user, time, message):
